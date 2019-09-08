@@ -45,9 +45,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let rand_iter = (0..)
         .filter_map(|_| data.choose(&mut rng))
         .scan(HashSet::new(), |used, &(read, writing)| {
-            if read == "" {
-                Some(None)
-            } else if !used.insert(read) {
+            if read == "" || !used.insert(read) {
                 Some(None)
             } else {
                 Some(Some((read, writing)))
