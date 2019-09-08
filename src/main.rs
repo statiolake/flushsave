@@ -5,10 +5,11 @@ use std::io::prelude::*;
 use std::time::{Duration, Instant};
 use std::{error, fs, io, sync::mpsc, thread};
 
+const END_SEQUENCE: &str = "おわる";
 const NUM_QUESTIONS: usize = 15;
 const BEFORE_START_SECS: usize = 3;
-const SLEEP_DURATION: Duration = Duration::from_millis(100);
-const ANSWER_TIME: Duration = Duration::from_secs(5);
+const SLEEP_DURATION: Duration = Duration::from_secs(2);
+const ANSWER_TIME: Duration = Duration::from_secs(60);
 
 macro_rules! draw_center {
     ($($x:tt)*) => {{
@@ -44,11 +45,11 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let rand_iter = (0..)
         .filter_map(|_| data.choose(&mut rng))
-        .scan(HashSet::new(), |used, &(read, writing)| {
-            if read == "" || !used.insert(read) {
+        .scan(HashSet::new(), |used, &(reading, writing)| {
+            if reading == "" || !used.insert(reading) {
                 Some(None)
             } else {
-                Some(Some((read, writing)))
+                Some(Some((reading, writing)))
             }
         })
         .filter_map(|x| x);
@@ -57,8 +58,8 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let answers: Vec<_> = rand_iter.take(NUM_QUESTIONS).collect();
 
-    for (idx, (_, question)) in answers.iter().enumerate() {
-        draw_center!("[{}/{}] {}", idx + 1, NUM_QUESTIONS, question);
+    for (idx, (reading, writing)) in answers.iter().enumerate() {
+        draw_center!("[{}/{}] {} ({})", idx + 1, NUM_QUESTIONS, reading, writing);
         thread::sleep(SLEEP_DURATION);
     }
 
@@ -86,6 +87,9 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let time = Instant::now();
     while time.elapsed() < ANSWER_TIME {
         if let Ok(v) = rx.try_recv() {
+            if v == END_SEQUENCE {
+                break;
+            }
             responses.insert(v);
         }
     }
@@ -95,8 +99,8 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     println!("そこまで!");
     println!();
     let mut res = 0;
-    for (read, writing) in answers {
-        let sign = if responses.contains(read) || responses.contains(writing) {
+    for (reading, writing) in answers {
+        let sign = if responses.contains(reading) || responses.contains(writing) {
             res += 1;
             'o'
         } else {
