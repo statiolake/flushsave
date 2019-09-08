@@ -7,9 +7,7 @@ use std::{error, fs, io, sync::mpsc, thread};
 
 const NUM_QUESTIONS: usize = 15;
 const BEFORE_START_SECS: usize = 3;
-// const SLEEP_DURATION: Duration = Duration::from_secs(2);
 const SLEEP_DURATION: Duration = Duration::from_millis(100);
-// const ANSWER_TIME: Duration = Duration::from_secs(60);
 const ANSWER_TIME: Duration = Duration::from_secs(5);
 
 macro_rules! draw_center {
@@ -20,15 +18,6 @@ macro_rules! draw_center {
         cursor().goto(0, 0)?;
     }}
 }
-
-// macro_rules! draw_top {
-//     ($($x:tt)*) => {{
-//         let (x, y) = cursor().pos();
-//         cursor().goto(0, 0)?;
-//         println!($($x)*);
-//         cursor().goto(x, y)?;
-//     }}
-// }
 
 macro_rules! wait_for {
     ($sec:expr, $($x:tt)*) => {{
